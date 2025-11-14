@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, computed, effect, ElementRef, signal, viewChild, ViewChild } from '@angular/core';
 import { Activity } from '../../../shared/model/activity.model';
 import { Chart } from 'chart.js/auto';
+import { filter } from 'rxjs';
 
 
 type PeriodMode = 'predefined' | 'custom';
@@ -44,7 +45,7 @@ export class DashboardPage implements AfterViewInit {
     const activities = this.activities();
     const activityFilter = this.activeActivityFilter();
     const periodFilter = this.activePeriodFilter();
-    const typeFilter = this.activeTypeFilter();
+    
     const periodTypeFilter = this.activePeriodTypeFilter();
 
     let filtered = activities;
@@ -79,16 +80,6 @@ export class DashboardPage implements AfterViewInit {
           }
           return true;
       });
-    }
-
-    if (typeFilter !== 'Distance') {
-      if (typeFilter === 'Duration') {
-        filtered = filtered.sort((a, b) => b.duration - a.duration);
-      } else if (typeFilter === 'Calories') {
-        filtered = filtered.sort((a, b) => b.calories - a.calories);
-      } else if (typeFilter === 'Ascent') {
-        filtered = filtered.sort((a, b) => b.totalAscent - a.totalAscent);
-      }
     }
 
     return filtered.sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -252,7 +243,22 @@ export class DashboardPage implements AfterViewInit {
       const labels = acts.map(a =>
         a.date.toISOString().split('T')[0]
       );
-      const data = acts.map(a => Number(a.distance.toFixed(2)));
+      const typeFilter = this.activeTypeFilter();
+      const computeData = () => {
+        switch (typeFilter) {
+          case 'Distance':
+            return acts.map(a => Number(a.distance.toFixed(2)));
+          case 'Duration':
+            return acts.map(a => Number((a.duration / 3600).toFixed(2))); // hours
+          case 'Calories':
+            return acts.map(a => Number(a.calories.toFixed(0)));
+          case 'Ascent':
+            return acts.map(a => Number(a.totalAscent.toFixed(0)));
+          default:
+            return acts.map(a => Number(a.distance.toFixed(2)));
+        }
+      }
+      const data = computeData();
       this.activitiesChart.data.labels = labels;
       this.activitiesChart.data.datasets[0].data = data;
       try { this.activitiesChart.update(); } catch (e) { /* no-op */ }
