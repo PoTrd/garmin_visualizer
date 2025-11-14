@@ -1,0 +1,140 @@
+<!-- Dashboard View -->
+<div>
+    <header class="mb-8">
+        <h1 class="text-3xl font-bold text-white">Activity Dashboard</h1>
+        <p class="mt-1 text-slate-400">Your performance at a glance.</p>
+    </header>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-4 mb-8">
+        <div class="flex items-center space-x-2 bg-slate-800 p-1.5 rounded-lg max-w-max">
+        @for (filter of activityFilters; track filter) {
+            <button 
+            (click)="setActivityFilter(filter)"
+            class="px-4 py-1.5 text-sm font-medium rounded-md transition-colors duration-200"
+            [class.bg-indigo-600]="activeActivityFilter() === filter"
+            [class.text-white]="activeActivityFilter() === filter"
+            [class.text-slate-300]="activeActivityFilter() !== filter"
+            [class.hover:bg-slate-700]="activeActivityFilter() !== filter">
+            {{ filter }}
+            </button>
+        }
+        </div>
+
+        <div class="flex items-center space-x-2 bg-slate-800 p-1.5 rounded-lg max-w-max">
+        @for (filter of periodFilters; track filter) {
+            <button
+            (click)="setPeriodFilter(filter)"
+            class="px-4 py-1.5 text-sm font-medium rounded-md transition-colors duration-200"
+            [class.bg-indigo-600]="activePeriodFilter() === filter"
+            [class.text-white]="activePeriodFilter() === filter"
+            [class.text-slate-300]="activePeriodFilter() !== filter"
+            [class.hover:bg-slate-700]="activePeriodFilter() !== filter">
+            {{ filter }}
+            </button>
+        }
+        <button class="px-4 py-1.5 text-sm font-medium rounded-md transition-colors duration-200">
+            <img
+                class="w-5 h-5"
+                src="assets/calendar_white_icon.svg"
+                alt="calendar_white_icon" />
+        </button>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        @let stats = summaryStats();
+        <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
+        <h3 class="text-sm font-medium text-slate-400">Total Activities</h3>
+        <p class="mt-2 text-3xl font-semibold text-white">{{ stats.count }}</p>
+        </div>
+        <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
+        <h3 class="text-sm font-medium text-slate-400">Total Distance</h3>
+        <p class="mt-2 text-3xl font-semibold text-white">{{ stats.totalDistance.toFixed(2) }} <span class="text-lg text-slate-400">km</span></p>
+        </div>
+        <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
+        <h3 class="text-sm font-medium text-slate-400">Total Duration</h3>
+        <p class="mt-2 text-3xl font-semibold text-white">{{ formatDuration(stats.totalDuration) }}</p>
+        </div>
+        <div class="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
+        <h3 class="text-sm font-medium text-slate-400">Total Ascent</h3>
+        <p class="mt-2 text-3xl font-semibold text-white">{{ stats.totalAscent.toLocaleString('fr-FR') }} <span class="text-lg text-slate-400">m</span></p>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-4 mb-8">
+        <div class="flex items-center space-x-2 bg-slate-800 p-1.5 rounded-lg max-w-max">
+        @for (filter of typeFilters; track filter) {
+            <button 
+            (click)="setTypeFilter(filter)"
+            class="px-4 py-1.5 text-sm font-medium rounded-md transition-colors duration-200"
+            [class.bg-indigo-600]="activeTypeFilter() === filter"
+            [class.text-white]="activeTypeFilter() === filter"
+            [class.text-slate-300]="activeTypeFilter() !== filter"
+            [class.hover:bg-slate-700]="activeTypeFilter() !== filter">
+            {{ filter }}
+            </button>
+        }
+        </div> 
+
+        <div class="flex items-center space-x-2 bg-slate-800 p-1.5 rounded-lg max-w-max">
+        @for (filter of periodTypeFilters; track filter) {
+            <button 
+            (click)="setPeriodTypeFilter(filter)"
+            class="px-4 py-1.5 text-sm font-medium rounded-md transition-colors duration-200"
+            [class.bg-indigo-600]="activePeriodTypeFilter() === filter"
+            [class.text-white]="activePeriodTypeFilter() === filter"
+            [class.text-slate-300]="activePeriodTypeFilter() !== filter"
+            [class.hover:bg-slate-700]="activePeriodTypeFilter() !== filter">
+            {{ filter }}
+            </button>
+        }
+        </div>
+    </div>
+
+    <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-white mb-4">Distance Over Time</h2>
+        <div class="h-80 relative grid grid-cols-1 md:grid-cols-2 gap-4">
+            <canvas #activitiesChart class="w-full h-64"></canvas>
+        </div>
+        </div>  
+    </div>
+
+    <!-- Activities Table -->
+    <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-slate-400">
+            <thead class="text-xs text-slate-300 uppercase bg-slate-850">
+            <tr>
+                <th scope="col" class="px-6 py-3">Date</th>
+                <th scope="col" class="px-6 py-3">Title</th>
+                <th scope="col" class="px-6 py-3 text-right">Distance (km)</th>
+                <th scope="col" class="px-6 py-3 text-right">Duration</th>
+                <th scope="col" class="px-6 py-3 text-right">Avg Pace</th>
+                <th scope="col" class="px-6 py-3 text-right">Avg HR</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for (activity of filteredActivities(); track activity.date) {
+                <tr class="bg-slate-800 border-b border-slate-700 hover:bg-slate-850 transition-colors duration-200">
+                <td class="px-6 py-4 font-medium text-slate-200 whitespace-nowrap">{{ formatDate(activity.date) }}</td>
+                <td class="px-6 py-4">{{ activity.title }}</td>
+                <td class="px-6 py-4 text-right">{{ activity.distance.toFixed(2) }}</td>
+                <td class="px-6 py-4 text-right">{{ formatDuration(activity.duration) }}</td>
+                <td class="px-6 py-4 text-right">{{ activity.avgPace }}</td>
+                <td class="px-6 py-4 text-right">{{ activity.avgHR > 0 ? activity.avgHR : 'N/A' }}</td>
+                </tr>
+            } @empty {
+                <tr>
+                <td colspan="6" class="text-center py-10 px-6 text-slate-500">
+                    No activities found for the selected filter.
+                </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
