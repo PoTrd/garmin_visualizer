@@ -9,7 +9,7 @@ type PeriodMode = 'predefined' | 'custom';
 type ActivityFilterType = 'All' | 'Running' | 'Cycling' | 'Hiking';
 type PeriodFilterType = 'All' | 'Current year' | 'Current month' | 'Current week';
 type TypeFilterType = 'Distance' | 'Duration' | 'Calories' | 'Ascent';
-type PeriodTypeFilter = 'None' | 'Day' | 'Week' | 'Month' | 'Year';
+type PeriodTypeFilter = 'Day' | 'Week' | 'Month' | 'Year';
 
 @Component({
   standalone: true,
@@ -37,8 +37,8 @@ export class DashboardPage implements AfterViewInit {
   periodFilters: PeriodFilterType[] = ['All', 'Current year', 'Current month', 'Current week'];
   activePeriodFilter = signal<PeriodFilterType>('All');
 
-  periodTypeFilters: PeriodTypeFilter[] = ['None', 'Day', 'Week', 'Month', 'Year'];
-  activePeriodTypeFilter = signal<PeriodTypeFilter>('None');
+  periodTypeFilters: PeriodTypeFilter[] = ['Day', 'Week', 'Month', 'Year'];
+  activePeriodTypeFilter = signal<PeriodTypeFilter>('Day');
 
 
   filteredActivities = computed(() => {
@@ -46,8 +46,6 @@ export class DashboardPage implements AfterViewInit {
     const activityFilter = this.activeActivityFilter();
     const periodFilter = this.activePeriodFilter();
     
-    const periodTypeFilter = this.activePeriodTypeFilter();
-
     let filtered = activities;
 
     if (activityFilter !== 'All') {
@@ -103,8 +101,9 @@ export class DashboardPage implements AfterViewInit {
 
   constructor() {
     effect(() => {
-      if (this.isDataLoaded() && this.activitiesChart) {
-        this.updateCharts();
+      const _ = this.activePeriodTypeFilter();
+      if (this.isDataLoaded()) {
+        this.createCharts();
       }
     });
   }
@@ -164,7 +163,7 @@ export class DashboardPage implements AfterViewInit {
     return new Date(date.setDate(diff));
   }
 
-  private createCharts(): void {
+  createCharts(): void {
     const canvasRef = this.activitiesCanvas();
     if (!canvasRef?.nativeElement) return;
 
@@ -176,25 +175,36 @@ export class DashboardPage implements AfterViewInit {
     }
 
     Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
-    Chart.defaults.color = '#94a3b8';     // slate-400
-    Chart.defaults.borderColor = '#334155'; // slate-700
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = '#334155';
+
+    const chartType: any = this.activePeriodTypeFilter() === 'Day' ? 'line' : 'bar';
 
     this.activitiesChart = new Chart(ctx, {
-      type: 'line',
+      type: chartType,
       data: {
         labels: [],
         datasets: [
-          {
-            label: '',
-            data: [],
-            borderColor: '#6366F1',
-            backgroundColor: 'rgba(99,102,241,0.08)',
-            fill: true,
-            tension: 0.25,
-            borderWidth: 2,
-            pointRadius: 2,
-            pointHoverRadius: 4,
-          }
+          (chartType === 'line'
+            ? {
+                label: '',
+                data: [],
+                borderColor: '#6366F1',
+                backgroundColor: 'rgba(99,102,241,0.08)',
+                fill: true,
+                tension: 0.25,
+                borderWidth: 2,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+              }
+            : {
+                label: '',
+                data: [],
+                backgroundColor: 'rgba(99,102,241,0.9)',
+                borderColor: '#6366F1',
+                borderWidth: 1,
+              }
+          )
         ]
       },
       options: {
@@ -211,11 +221,14 @@ export class DashboardPage implements AfterViewInit {
               callback: (value: any, index: number) => {
                 const label = (this.activitiesChart?.data?.labels || [])[index];
                 if (!label) return '';
-                const d = new Date(label);
-                return d.toLocaleDateString('fr-FR', {
-                  day: '2-digit',
-                  month: '2-digit'
-                });
+                const maybeDate = new Date(label);
+                if (!isNaN(maybeDate.getTime())) {
+                  return maybeDate.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit'
+                  });
+                }
+                return String(label);
               }
             },
             grid: {
@@ -237,31 +250,88 @@ export class DashboardPage implements AfterViewInit {
     this.updateCharts();
   }
 
-  private updateCharts(): void {
+  updateCharts(): void {
     const acts = this.filteredActivities().slice().sort((a, b) => a.date.getTime() - b.date.getTime());
-    if (this.activitiesChart) {
-      const labels = acts.map(a =>
-        a.date.toISOString().split('T')[0]
-      );
-      const typeFilter = this.activeTypeFilter();
-      const computeData = () => {
-        switch (typeFilter) {
-          case 'Distance':
-            return acts.map(a => Number(a.distance.toFixed(2)));
-          case 'Duration':
-            return acts.map(a => Number((a.duration / 3600).toFixed(2))); // hours
-          case 'Calories':
-            return acts.map(a => Number(a.calories.toFixed(0)));
-          case 'Ascent':
-            return acts.map(a => Number(a.totalAscent.toFixed(0)));
-          default:
-            return acts.map(a => Number(a.distance.toFixed(2)));
-        }
+    if (!this.activitiesChart) return;
+
+    const periodType = this.activePeriodTypeFilter();
+    const typeFilter = this.activeTypeFilter();
+
+    const aggMap = new Map<string, number>();
+    const labelMap = new Map<string, string>();
+
+    const getValue = (a: Activity): number => {
+      switch (typeFilter) {
+        case 'Distance': return a.distance;
+        case 'Duration': return a.duration;
+        case 'Calories': return a.calories;
+        case 'Ascent': return a.totalAscent;
+        default: return 0;
       }
-      const data = computeData();
-      this.activitiesChart.data.labels = labels;
-      this.activitiesChart.data.datasets[0].data = data;
-      try { this.activitiesChart.update(); } catch (e) { /* no-op */ }
+    };
+
+    for (const a of acts) {
+      const d = a.date;
+      if (!d) continue;
+
+      let key: string;
+      let label: string;
+
+      switch (periodType) {
+        case 'Day': {
+          key = d.toISOString().split('T')[0];
+          label = key;
+          break;
+        }
+        case 'Week': {
+          const weekStart = this.getFirstDayOfWeek(new Date(d));
+          key = weekStart.toISOString().split('T')[0];
+          label = weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+          break;
+        }
+        case 'Month': {
+          key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          label = d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
+          break;
+        }
+        case 'Year': {
+          key = `${d.getFullYear()}`;
+          label = key;
+          break;
+        }
+        default:
+          continue;
+      }
+
+      const value = getValue(a);
+      aggMap.set(key, (aggMap.get(key) || 0) + value);
+      if (!labelMap.has(key)) labelMap.set(key, label);
     }
+
+    if (aggMap.size === 0) {
+      this.activitiesChart.data.labels = [];
+      this.activitiesChart.data.datasets[0].data = [];
+      try { this.activitiesChart.update(); } catch { /* no-op */ }
+      return;
+    }
+
+    const sortedKeys = Array.from(aggMap.keys()).sort((k1, k2) => new Date(k1).getTime() - new Date(k2).getTime());
+
+    const labels = sortedKeys.map(k => labelMap.get(k) || k);
+    const rawData = sortedKeys.map(k => aggMap.get(k) || 0);
+
+    const data = rawData.map(v => {
+      switch (typeFilter) {
+        case 'Distance': return Number(v.toFixed(2));
+        case 'Duration': return Number((v / 3600).toFixed(2));
+        case 'Calories': return Math.round(v);
+        case 'Ascent': return Math.round(v);
+        default: return Number(v.toFixed(2));
+      }
+    });
+
+    this.activitiesChart.data.labels = labels;
+    this.activitiesChart.data.datasets[0].data = data;
+    try { this.activitiesChart.update(); } catch { /* no-op */ }
   }
 }
