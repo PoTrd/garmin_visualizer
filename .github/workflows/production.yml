@@ -26,7 +26,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist/garmin_visualizer/browser
+          path: dist/garmin_visualizer/browser
+
 
   deploy:
     permissions:
