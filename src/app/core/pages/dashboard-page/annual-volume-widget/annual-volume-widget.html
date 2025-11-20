@@ -4,7 +4,8 @@
         <div class="h-full grid grid-cols-12">
             @for (data of displayedData(); track data.month) {
                 <div class="flex align-middle justify-center items-end">
-                    <span class="w-0.5 bg-white" [style.height.%]="data.distanceInPercent"></span>
+                    <span class="w-0.5 h-full bg-white origin-bottom transform transition-transform duration-700 ease-out"
+                        [style.transform]="'scaleY(' + (data.value / 100) + ')'"></span>
                 </div>
             }
         </div>

@@ -6,7 +6,7 @@ import { AnnualVolumeWidget } from './annual-volume-widget/annual-volume-widget'
 type PeriodMode = 'predefined' | 'custom';
 
 type ActivityFilterType = 'All' | 'Running' | 'Cycling' | 'Hiking';
-type TypeFilterType = 'Distance' | 'Duration' | 'Calories' | 'Ascent';
+export type TypeFilterType = 'Distance' | 'Duration' | 'Calories' | 'Ascent';
 
 @Component({
   standalone: true,

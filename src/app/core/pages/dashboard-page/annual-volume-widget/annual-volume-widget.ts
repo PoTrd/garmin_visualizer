@@ -1,15 +1,12 @@
-import { AfterViewInit, Component, computed, input } from '@angular/core';
+import { Component, computed, input, Renderer2, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { Activity } from '../../../../shared/model/activity.model';
+import { TypeFilterType } from '../dashboard-page';
 
 type Months = 'January' | 'February' | 'March' | 'April' | 'May' | 'June' | 'July' | 'August' | 'September' | 'October' | 'November' | 'December';
 
 type displayedData = {
     month: Months;
-    distanceInPercent: number;
-    durationInPercent: number;
-    caloriesInPercent: number;
-    ascentInPercent: number;
-    
+    value: number;
 }
 
 @Component({
@@ -19,7 +16,20 @@ type displayedData = {
   styleUrl: './annual-volume-widget.css',
 })
 export class AnnualVolumeWidget {
+  @ViewChildren('animatedBar') bars!: QueryList<ElementRef>;
+
+  constructor(private renderer: Renderer2) {}
+
+  triggerAnimation(): void {
+    this.bars.forEach((bar) => {
+      this.renderer.removeClass(bar.nativeElement, 'animate');
+      void bar.nativeElement.offsetWidth; // Trigger reflow to restart animation
+      this.renderer.addClass(bar.nativeElement, 'animate');
+    });
+  }
+
   data = input<Activity[]>();
+  filter = input<TypeFilterType>();
   lstMonths: Months[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   displayedData = computed<displayedData[]>(() => {
       const activities = this.data() ?? [];
@@ -30,30 +40,31 @@ export class AnnualVolumeWidget {
               const activityMonth = activity.date.toLocaleString('en-US', { month: 'long' }) as Months;
               return activityMonth === month;
           });
-          const totalDistance = monthActivities.reduce((sum, act) => sum + act.distance, 0);
-          const totalDuration = monthActivities.reduce((sum, act) => sum + act.duration, 0);
-          const totalCalories = monthActivities.reduce((sum, act) => sum + act.calories, 0);
-          const totalAscent = monthActivities.reduce((sum, act) => sum + act.totalAscent, 0);
+          let totalValue = 0;
+          switch(this.filter()) {
+              case 'Distance':
+                  totalValue = monthActivities.reduce((sum, act) => sum + act.distance, 0);
+                  break;
+              case 'Duration':
+                  totalValue = monthActivities.reduce((sum, act) => sum + act.duration, 0);
+                  break;
+              case 'Calories':
+                  totalValue = monthActivities.reduce((sum, act) => sum + act.calories, 0);
+                  break;
+              case 'Ascent':
+                  totalValue = monthActivities.reduce((sum, act) => sum + act.totalAscent, 0);
+                  break;
+          }
           
           result.push({
               month: month,
-              distanceInPercent: totalDistance,
-              durationInPercent: totalDuration,
-              caloriesInPercent: totalCalories,
-              ascentInPercent: totalAscent,
+              value: totalValue
           });
       }
-      const geMaxValue = (array: number[]) => Math.max(...array);
-      const maxDistance = geMaxValue(result.map(d => d.distanceInPercent));
-      const maxDuration = geMaxValue(result.map(d => d.durationInPercent));
-      const maxCalories = geMaxValue(result.map(d => d.caloriesInPercent));
-      const maxAscent = geMaxValue(result.map(d => d.ascentInPercent));
+      const maxValue = Math.max(...result.map(d => d.value));
       
       for(let data of result) {
-          data.distanceInPercent = maxDistance ? (data.distanceInPercent / maxDistance) * 100 : 0;
-          data.durationInPercent = maxDuration ? (data.durationInPercent / maxDuration) * 100 : 0;
-          data.caloriesInPercent = maxCalories ? (data.caloriesInPercent / maxCalories) * 100 : 0;
-          data.ascentInPercent = maxAscent ? (data.ascentInPercent / maxAscent) * 100 : 0;
+        data.value = maxValue ? (data.value / maxValue) * 100 : 0;
       }
 
       return result;
