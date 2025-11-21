@@ -60,8 +60,9 @@
         </div> 
     </div>
 
-    <div class="grid grid-cols-2">
-        <app-annual-volume-widget [data]="filteredActivities()" [filter]="activeTypeFilter()"></app-annual-volume-widget>
+    <div class="grid grid-cols-2 gap-8">
+        <app-annual-volume-widget [data]="filteredActivities()" [filter]="activeTypeFilter()" (selectedMonth)="currentMonth.set($event)"></app-annual-volume-widget>
+        <app-monthly-volume-widget  [data]="filteredActivities()" [selectedMonth]="currentMonth()"></app-monthly-volume-widget>
     </div>
 
     <!-- Activities Table -->

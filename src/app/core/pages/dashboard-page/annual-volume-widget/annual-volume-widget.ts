@@ -1,4 +1,4 @@
-import { Component, computed, input, Renderer2, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, computed, input, Renderer2, ElementRef, ViewChildren, QueryList, output } from '@angular/core';
 import { Activity } from '../../../../shared/model/activity.model';
 import { TypeFilterType } from '../dashboard-page';
 
@@ -23,12 +23,13 @@ export class AnnualVolumeWidget {
   triggerAnimation(): void {
     this.bars.forEach((bar) => {
       this.renderer.removeClass(bar.nativeElement, 'animate');
-      void bar.nativeElement.offsetWidth; // Trigger reflow to restart animation
+      void bar.nativeElement.offsetWidth;
       this.renderer.addClass(bar.nativeElement, 'animate');
     });
   }
 
   data = input<Activity[]>();
+  selectedMonth = output<Months>();
   filter = input<TypeFilterType>();
   lstMonths: Months[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   displayedData = computed<displayedData[]>(() => {
@@ -79,5 +80,9 @@ export class AnnualVolumeWidget {
       });
       return result;
   }
+
+    selectMonth(month: Months): void {
+        this.selectedMonth.emit(month);
+    }
 
 }

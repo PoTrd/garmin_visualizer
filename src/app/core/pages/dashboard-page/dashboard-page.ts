@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, computed, effect, signal } from '@angular/core';
 import { Activity } from '../../../shared/model/activity.model';
 import { AnnualVolumeWidget } from './annual-volume-widget/annual-volume-widget';
+import { MonthlyVolumeWidget } from './monthly-volume-widget/monthly-volume-widget';
 
 
 type PeriodMode = 'predefined' | 'custom';
@@ -12,13 +13,15 @@ export type TypeFilterType = 'Distance' | 'Duration' | 'Calories' | 'Ascent';
   standalone: true,
   selector: 'app-dashboard-page',
   imports: [
-    AnnualVolumeWidget
+    AnnualVolumeWidget,
+    MonthlyVolumeWidget
   ],
   templateUrl: './dashboard-page.html',
   styleUrls: ['./dashboard-page.css'],
 })
 export class DashboardPage implements AfterViewInit {
   activities = signal<Activity[]>([]);
+  currentMonth = signal<string | null>(null);
 
   periodMode = signal<PeriodMode>('predefined');
   
