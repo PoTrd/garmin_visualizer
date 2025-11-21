@@ -3,17 +3,15 @@
     <div class="h-80 relative flex flex-col justify-end gap-4">
         <div class="h-full grid grid-cols-12">
             @for (data of displayedData(); track data.month) {
-                <div class="flex align-middle justify-center items-end">
-                    <span class="w-0.5 h-full bg-white origin-bottom transform transition-transform duration-700 ease-out"
+                <div class="flex flex-col h-full p-2 gap-4 cursor-pointer hover:bg-slate-700/50 rounded-md hover:scale-105 transition-all duration-300">
+                    <div class="flex align-middle justify-center items-end grow">
+                        <span class="w-0.5 h-full bg-white origin-bottom transform transition-transform duration-700 ease-out"
                         [style.transform]="'scaleY(' + (data.value / 100) + ')'">
-                    </span>
-                </div>
-            }
-        </div>
-        <div class="grid grid-cols-12">
-            @for (data of displayedData(); track data.month) {
-                <div class="text-white text-sm [writing-mode:vertical-rl] rotate-180 flex justify-end items-center">
-                    {{ data.month }}
+                        </span>
+                    </div>
+                    <div class="h-20 text-white text-sm [writing-mode:vertical-rl] rotate-180 flex justify-end items-center">
+                        {{ data.month }}
+                    </div>
                 </div>
             }
         </div>
