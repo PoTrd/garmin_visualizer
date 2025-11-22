@@ -1,5 +1,6 @@
 import { Component, computed, effect, input } from '@angular/core';
 import { Activity } from '../../../../shared/model/activity.model';
+import { ActivityType } from '../../../../shared/enum/activity-type.enum';
 
 type Day = {
     date: Date;
@@ -76,6 +77,23 @@ export class MonthlyVolumeWidget {
     if (months30.includes(month)) return 30;
     if (month === 'February') return 28;
     return 0;
+  }
+
+  getActivityIcon(activityType: ActivityType): string {
+    switch (activityType) {
+      case ActivityType.cap:
+      case ActivityType.trail:
+      case ActivityType.tapis:
+        return 'assets/runner_white.png';
+      case ActivityType.cyclisme:
+      case ActivityType.cyclismeVtt:
+      case ActivityType.cyclismeRoute:
+        return 'assets/velo_white.png';
+      case ActivityType.randonee:
+        return 'assets/pieton_white.png';
+      default:
+        return '';
+    }
   }
 
   test(): void {

@@ -10,12 +10,12 @@
             <span class="flex items-center justify-center">S</span>
             <span class="flex items-center justify-center">S</span>
         </div>
-        <div class="grid grid-cols-7 grid-rows-6 h-full">
+        <div class="grid grid-cols-7 grid-rows- h-full">
             @for (day of displayedData(); track day.date) {
                 <div class="flex justify-center items-center h-full w-full">
                     @if (day.lstActivities.length > 0) {
-                        <div class="h-6 w-6 rounded-full bg-red-600 flex justify-center items-center text-white">
-                            {{ day.date.getDate() }}
+                        <div class="h-8 w-8 rounded-full bg-indigo-600 flex justify-center items-center">
+                            <img [src]="getActivityIcon(day.lstActivities[0].activityType)" class="h-5 w-5"/>
                         </div>
                     } @else {
                         <div class="h-6 w-6 rounded-full flex justify-center items-center text-slate-400">
