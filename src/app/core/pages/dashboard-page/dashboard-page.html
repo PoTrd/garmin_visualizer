@@ -80,7 +80,7 @@
             </tr>
             </thead>
             <tbody>
-            @for (activity of filteredActivities(); track activity.date) {
+            @for (activity of filteredDataWithMonth(); track activity.date) {
                 <tr class="bg-slate-800 border-b border-slate-700 hover:bg-slate-850 transition-colors duration-200">
                 <td class="px-6 py-4 font-medium text-slate-200 whitespace-nowrap">{{ formatDate(activity.date) }}</td>
                 <td class="px-6 py-4">{{ activity.title }}</td>

@@ -4,9 +4,6 @@ import { AnnualVolumeWidget } from './annual-volume-widget/annual-volume-widget'
 import { MonthlyVolumeWidget } from './monthly-volume-widget/monthly-volume-widget';
 import { ActivityType } from '../../../shared/enum/activity-type.enum';
 
-
-type PeriodMode = 'predefined' | 'custom';
-
 type ActivityFilterType = 'All' | 'Running' | 'Cycling' | 'Hiking';
 export type TypeFilterType = 'Distance' | 'Duration' | 'Calories' | 'Ascent';
 
@@ -24,8 +21,6 @@ export class DashboardPage implements AfterViewInit {
   activities = signal<Activity[]>([]);
   currentMonth = signal<string | null>(null);
 
-  periodMode = signal<PeriodMode>('predefined');
-  
   isDataLoaded = computed(() => this.activities().length > 0);
   
   activityFilters: ActivityFilterType[] = ['All', 'Running', 'Cycling', 'Hiking'];
@@ -52,6 +47,20 @@ export class DashboardPage implements AfterViewInit {
 
     return filtered.sort((a, b) => b.date.getTime() - a.date.getTime());
   });
+
+filteredDataWithMonth = computed(() => {
+  const month = this.currentMonth();
+  const activities = this.filteredActivities();
+  if (!month) {
+    return this.filteredActivities();
+  }
+  
+  return activities.filter(activity => {
+    const actualYear = new Date().getFullYear();
+    return activity.date.getFullYear() === actualYear &&
+           activity.date.toLocaleString('en-US', { month: 'long' }) === month;
+  });
+});
 
   isNoActivityToDisplay = computed(() => this.filteredActivities().length === 0);
 
@@ -88,10 +97,6 @@ export class DashboardPage implements AfterViewInit {
 
   setActivityFilter(filter: ActivityFilterType): void {
     this.activeActivityFilter.set(filter);
-  }
-
-  setPeriodMode(mode: PeriodMode): void {
-    this.periodMode.set(mode);
   }
 
   setTypeFilter(filter: TypeFilterType): void {
