@@ -1,4 +1,4 @@
-import { Component, computed, input, Renderer2, ElementRef, ViewChildren, QueryList, output } from '@angular/core';
+import { Component, computed, input, Renderer2, ElementRef, ViewChildren, QueryList, output, signal } from '@angular/core';
 import { Activity } from '../../../../shared/model/activity.model';
 import { TypeFilterType } from '../dashboard-page';
 
@@ -30,6 +30,7 @@ export class AnnualVolumeWidget {
 
     data = input<Activity[]>();
     selectedMonth = output<Months>();
+    highlightedMonth = signal<Months | undefined>(undefined);
     filter = input<TypeFilterType>();
     lstMonths: Months[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     displayedData = computed<displayedData[]>(() => {
@@ -85,5 +86,6 @@ export class AnnualVolumeWidget {
 
     selectMonth(month: Months): void {
         this.selectedMonth.emit(month);
+        this.highlightedMonth.set(month);
     }
 }
