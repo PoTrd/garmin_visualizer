@@ -1,64 +1,81 @@
-# GarminVisualizer
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.10.
+# Garmin Activity Visualizer
 
-## Development server
+Visualize your Garmin activity data with clarity and style. This app lets you upload your exported Garmin CSV file and instantly see your training stats, trends, and progress—no account or cloud upload required.
 
-To start a local development server, run:
+## Features
 
-```bash
-ng serve
-```
+- **Drag & Drop CSV Import**: Just drop your Garmin activities CSV file to get started.
+- **Dashboard Overview**: See total activities, distance, duration, and ascent at a glance.
+- **Interactive Filters**: Filter by activity type and year/month to focus on what matters.
+- **Charts**: Annual and monthly volume widgets help you spot trends and stay motivated.
+- **Detailed Table**: Browse all your activities with sortable stats like distance, pace, and heart rate.
+- **Modern UI**: Clean, responsive design with Tailwind CSS and Chart.js.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Quick Start
 
-## Code scaffolding
+1. **Install dependencies**
+	 ```bash
+	 npm install
+	 ```
+2. **Run the app locally**
+	 ```bash
+	 ng serve
+	 ```
+3. Open your browser at [http://localhost:4200](http://localhost:4200)
+4. On the home page, drag and drop your Garmin CSV export to unlock your stats. If the localStorage already contains data you can directly go on /dashboard page.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## CSV Format
 
-```bash
-ng generate component component-name
-```
+Export your activities from Garmin Connect as a CSV file. The app expects columns like:
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- `Type d'activité` (Activity Type)
+- `Date`
+- `Titre` (Title)
+- `Distance`
+- `Durée` (Duration)
+- `Calories`
+- `Fréquence cardiaque moyenne` (Avg HR)
+- `Fréquence cardiaque maximale` (Max HR)
+- `Allure moyenne` (Avg Pace)
+- `Ascension totale` (Total Ascent)
 
-```bash
-ng generate --help
-```
+If your file is missing columns, some stats may not display.
 
-## Building
+## Project Structure
 
-To build the project run:
+- `src/app/core/pages/csv-loader-page/` — File upload and parsing UI
+- `src/app/core/pages/dashboard-page/` — Main dashboard and widgets
+- `src/app/shared/model/` — Activity data model
+- `src/app/shared/services/csv-parser.service.ts` — CSV parsing logic
 
-```bash
-ng build
-```
+## Tech Stack
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- [Angular](https://angular.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
 
-## Running unit tests
+## Development
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+- **Build for production:**
+	```bash
+	npm run build
+	```
+<!-- - **Run tests:**
+    ```bash
+    npm test 
+    ``` -->
 
-```bash
-ng test
-```
+## CI/CD
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Production Deployment Workflow:**  
+    The file `.github/workflows/production.yml` defines a GitHub Actions workflow for building and deploying the app automatically on pushes to the `production` branch.  
 
 
-## Architecture articles 
 
-- https://medium.com/@marketing_26756/angular-best-practices-tips-for-project-structure-and-organization-490ca7950829
+## License
+
+MIT. This project is open source and free to use.
+
+---
+
+*Built for athletes who love their data, by someone who does too.*

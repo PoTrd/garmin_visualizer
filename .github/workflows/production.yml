@@ -28,7 +28,6 @@ jobs:
         with:
           path: docs/browser
 
-
   deploy:
     permissions:
       pages: write
