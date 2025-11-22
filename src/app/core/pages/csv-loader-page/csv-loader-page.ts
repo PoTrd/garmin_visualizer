@@ -73,6 +73,8 @@ export class CsvLoaderPage {
 
   handleLoad(): void {
     console.log('CSV file loaded successfully.');
-    this._router.navigate(['/dashboard']);
+    setTimeout(() => {
+      this._router.navigate(['/dashboard']);
+    }, 1);
   }
 }
