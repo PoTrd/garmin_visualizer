@@ -1,6 +1,7 @@
+import { ActivityType } from "../enum/activity-type.enum";
 
 export interface Activity {
-  activityType: string;
+  activityType: ActivityType;
   date: Date;
   title: string;
   distance: number;
