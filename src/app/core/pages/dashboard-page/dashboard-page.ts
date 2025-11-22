@@ -2,6 +2,7 @@ import { AfterViewInit, Component, computed, effect, signal } from '@angular/cor
 import { Activity } from '../../../shared/model/activity.model';
 import { AnnualVolumeWidget } from './annual-volume-widget/annual-volume-widget';
 import { MonthlyVolumeWidget } from './monthly-volume-widget/monthly-volume-widget';
+import { ActivityType } from '../../../shared/enum/activity-type.enum';
 
 
 type PeriodMode = 'predefined' | 'custom';
@@ -42,9 +43,9 @@ export class DashboardPage implements AfterViewInit {
     if (activityFilter !== 'All') {
         filtered = activities.filter(activity => {
             const type = activity.activityType;
-            if (activityFilter === 'Running') return type === 'Course à pied' || type === 'Trail' || type === 'Course à pied sur tapis roulant';
-            if (activityFilter === 'Cycling') return type.includes('Cyclisme');
-            if (activityFilter === 'Hiking') return type === 'Randonnée';
+            if (activityFilter === 'Running') return type === ActivityType.cap || type === ActivityType.trail || type === ActivityType.tapis;
+            if (activityFilter === 'Cycling') return type === ActivityType.cyclisme || type === ActivityType.cyclismeRoute || type === ActivityType.cyclismeVtt;
+            if (activityFilter === 'Hiking') return type === ActivityType.randonee;
             return false;
         });
     }
